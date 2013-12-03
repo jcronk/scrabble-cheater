@@ -7,7 +7,6 @@ use File::Slurp;
 my @wl = read_file( 'enable1.txt', chomp => 1 );
 my $continue = 'n';
 my $letters;
-my $has_wildcard;
 do {
     $letters = get_input("Enter letters\n") unless $continue =~ /y/i;
     my $pattern = get_input("Enter pattern\n");
@@ -19,7 +18,7 @@ do {
         print "No words found.\n";
     }
     $continue = get_input("Continue with same letters?\n");
-} while ( $continue =~ /y/i );
+} while ( $continue =~ /^y/i );
 
 sub get_input {
     my $message = shift;
