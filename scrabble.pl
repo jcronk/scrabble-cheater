@@ -10,18 +10,10 @@ my $letters;
 my $has_wildcard;
 do {
     $letters = get_input("Enter letters\n") unless $continue =~ /y/i;
-    # $has_wildcard = $letters =~ m/\*/;
     my $pattern = get_input("Enter pattern\n");
     my $length  = length $pattern;
-    # my $re      = sub_pattern( $pattern, $letters );
     if ( my $result = get_words_( $length, $pattern, $letters, \@wl ) ) {
-
-        # if ( my $result = get_words( $length, $re, \@wl ) ) {
         print "Your words:\n$result\n";
-        # my @dups = remove_duplicate_letters( $result, $pattern );
-        # print "Non-duplicated letter words: \n";
-        # print join "\n", @dups;
-        # print $/;
     }
     else {
         print "No words found.\n";
@@ -99,32 +91,4 @@ sub matches {
 sub consume {
     my ( $letter, $hash ) = @_;
     $$hash{$letter}--;
-}
-
-sub get_words {
-    my ( $length, $regex, $wl ) = @_;
-    my @out = grep { length($_) == $length } grep { /$regex/ } @wl;
-    return join "\n", @out if @out;
-    return 0;
-}
-
-sub remove_duplicate_letters {
-    my ( $list, $pattern ) = @_;
-    my $last_index = length($pattern) - 1;
-    my @wildcardpos =
-      grep { substr( $pattern, $_, 1 ) eq '.' } ( 0 .. $last_index );
-    grep { !has_duplicates_at( \@wildcardpos, $_ ) } split /\n/, $list;
-}
-
-sub has_duplicates_at {
-    my ( $positions, $word ) = @_;
-    my %index;
-    $index{ substr( $word, $_, 1 ) }++ for @$positions;
-    return grep { $_ > 1 } values %index;
-}
-
-sub sub_pattern {
-    my ( $pattern, $letters ) = @_;
-    $pattern =~ s/\./[$letters]/g;
-    return qr/^$pattern$/;
 }
