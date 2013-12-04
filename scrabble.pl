@@ -49,18 +49,27 @@ sub get_letters_to_match {
 sub get_words_ {
     my ( $length, $pattern, $letters, $wl ) = @_;
     my %own_letters = letters_hash($letters);
-    my $regexp      = qr/^$pattern$/;
-    my @list        = grep { /$regexp/ } @$wl;
     my @words;
-    for (@list) {
-        my @word_letters = split '', $_;
-        my @letters_to_match = get_letters_to_match( $_, $pattern );
-        my %pool = %own_letters;
-        if ( match_word( \@letters_to_match, \%pool ) ) {
-            push @words, $_;
-        }
-        else {
-            next;
+    my ( $front, $back ) = ( 1, 2 );
+    for ( 1 .. 2 ) {
+        my $pattern_copy = $pattern;
+        while ($pattern_copy) {
+            my $regexp = qr/^$pattern_copy$/;
+            my @list = grep { /$regexp/ } @$wl;
+            for (@list) {
+                my @word_letters = split '', $_;
+                my @letters_to_match =
+                  get_letters_to_match( $_, $pattern_copy );
+                my %pool = %own_letters;
+                if ( match_word( \@letters_to_match, \%pool ) ) {
+                    push @words, $_;
+                }
+                else {
+                    next;
+                }
+            }
+            $pattern_copy = substr( $pattern_copy, 1 ) if $_ == $front;
+            $pattern_copy = substr( $pattern_copy, 0, -2 ) if $_ == $back;
         }
     }
     return join "\n", @words if @words;
