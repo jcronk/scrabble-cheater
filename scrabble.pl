@@ -5,15 +5,21 @@ use autodie;
 use File::Slurp;
 
 my @wl       = read_file( 'enable1.txt', chomp => 1 );
+my @letter_vals = read_file( 'values.txt', chomp => 1);
+my %values;
+$values{$_->[0]} = $_->[1] for map { [split] } @letter_vals;
 my %wlc      = cache_words_by_length( \@wl );
 my $continue = 'n';
 my $letters;
+
 do {
     $letters = get_input("Enter letters\n") unless $continue =~ /y/i;
     my $pattern = get_input("Enter pattern\n");
     my $length  = length $pattern;
-    if ( my $result = get_words_( $length, $pattern, $letters, \%wlc ) ) {
-        print "Your words:\n$result\n";
+    if ( my @result = get_words_( $length, $pattern, $letters, \%wlc ) ) {
+        my $list = join "\n",map { "$_ - " . score_word($_) } @result;
+        print "Your words:\n$list\n";
+        print "Max length: " . length($result[-1]) . $/;
     }
     else {
         print "No words found.\n";
@@ -63,6 +69,8 @@ sub get_words_ {
     for ( 1 .. 2 ) {
         my $pattern_copy = $pattern;
         while ($pattern_copy =~ /[a-z]/) {
+            #TODO: Extract as method
+            # $pattern_copy, $wlc, %own_letters, %words
             my $regexp = qr/^$pattern_copy$/;
             my @list = grep { /$regexp/ } @{ $$wlc{ length $pattern_copy } };
             for (@list) {
@@ -83,8 +91,16 @@ sub get_words_ {
               if $_ == $back && $pattern_copy =~ /[a-z]/;
         }
     }
-    return join "\n", keys %words if %words;
+    return sort { length($a) <=> length($b) } keys %words if %words;
     return 0;
+}
+
+sub score_word {
+    my $word = shift;
+    my @letters = split '',$word;
+    my $score;
+    $score += $values{$_} for @letters;
+    $score;
 }
 
 sub match_word {
